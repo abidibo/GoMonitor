@@ -24,19 +24,17 @@ func init() {
 		panic(fmt.Sprintf("Error reading settings file, %s", err))
 	}
 
-	// Init logger
-	logger.InitLogger()
-	logger.ZapLog.Info("Starting gomonitor application")
-
 	// Ensure app home directory exists
 	homePath := viper.GetString("app.homePath")
 
 	err := os.MkdirAll(homePath, os.ModePerm)
 	if err != nil {
 		panic("Error creating the application home directory")
-	} else {
-		logger.ZapLog.Info("Application home directory ok ", homePath)
 	}
+
+	// Init logger
+	logger.InitLogger()
+	logger.ZapLog.Info("Starting gomonitor application")
 }
 
 type ProcessLog struct {
