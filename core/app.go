@@ -99,3 +99,23 @@ func Run() {
 		time.Sleep(time.Duration(logIntervalMinutes) * time.Minute)
 	}
 }
+
+func Stats(date string) {
+	fmt.Println("================================================")
+	fmt.Println("Stats for ", date)
+	fmt.Println("================================================")
+	processes, err := utils.GetAllDateProcesses("abidibo", date, 20)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		for _, p := range processes {
+			total, err := utils.GetTotalProcessTimeMinutes("abidibo", p, date)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("Process ", fmt.Sprintf("%25s", p), fmt.Sprintf("%4d", total), " minutes")
+			}
+		}
+	}
+
+}
