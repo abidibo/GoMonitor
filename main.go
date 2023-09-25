@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/TheCreeper/go-notify"
 	"github.com/abidibo/gomonitor/db"
 	"github.com/abidibo/gomonitor/logger"
 	"github.com/shirou/gopsutil/v3/process"
@@ -50,19 +51,37 @@ func main() {
 
 	// time control stuff
 	startTime := time.Now()
-	logIntervalMinutes := 5
+	logIntervalMinutes := viper.GetInt("app.logIntervalMinutes")
+
+	// get current user
+	logger.ZapLog.Debug("Retrieving current user")
+	currentUser, err := user.Current()
+	if err != nil {
+		logger.ZapLog.Error("Cannot get current user")
+	} else {
+		logger.ZapLog.Debug("Current user ", currentUser.Username)
+	}
+
+	// get screen time limit
+	limits := make(map[string]int)
+	err = viper.UnmarshalKey("app.screenTimeLimitMinutes", &limits)
+	timeScreenLimit, okTimeScreenLimit := limits[currentUser.Username]
+
+	// get remaining time
+	stm, err := db.DB().C.Prepare("SELECT SUM(total_time_minutes) FROM log WHERE user = ? AND date(timestamp) = date('now')")
+	if err != nil {
+		logger.ZapLog.Error("Cannot get total time", err)
+	} else if okTimeScreenLimit {
+		var totalMinutes int
+		stm.QueryRow(currentUser.Username).Scan(&totalMinutes)
+		ntf := notify.NewNotification("GoMonitor", fmt.Sprintf("Hey rapoide ti tengo d'occhio, di oggi hai ancora %d minuti", timeScreenLimit-totalMinutes))
+		if _, err := ntf.Show(); err != nil {
+			logger.ZapLog.Error("Cannot show notification ", err)
+		}
+	}
 
 	// keep program running
 	for {
-		// get current user
-		logger.ZapLog.Debug("Retrieving current user")
-		currentUser, err := user.Current()
-		if err != nil {
-			logger.ZapLog.Error("Cannot get current user")
-		} else {
-			logger.ZapLog.Debug("Current user ", currentUser.Username)
-		}
-
 		logger.ZapLog.Debug("Retrieving current user processes")
 		logProcesses := make([]ProcessLog, 0)
 		processes, _ := process.Processes()
@@ -104,11 +123,7 @@ func main() {
 			logger.ZapLog.Info("Total time for user ", currentUser.Username, " ", totalMinutes, " minutes")
 
 			// check if total time usage has exceeded the limit
-			limits := make(map[string]int)
-			err = viper.UnmarshalKey("app.screenTimeLimitMinutes", &limits)
-			timeScreenLimit, ok := limits[currentUser.Username]
-			// If the key exists
-			if ok {
+			if okTimeScreenLimit {
 				if totalMinutes > timeScreenLimit {
 					logger.ZapLog.Info("Limit exceeded for user ", currentUser.Username, " ", totalMinutes, " minutes")
 					// logout
@@ -126,6 +141,11 @@ func main() {
 								logger.ZapLog.Error("Cannot shutdown pc ", err)
 							}
 						}
+					}
+				} else if totalMinutes+logIntervalMinutes > timeScreenLimit {
+					ntf := notify.NewNotification("GoMonitor", fmt.Sprintf("Hey rapoide stai facendo il furbo, entro %d minuti ti sloggo!", logIntervalMinutes))
+					if _, err := ntf.Show(); err != nil {
+						logger.ZapLog.Error("Cannot show notification ", err)
 					}
 				}
 			}
