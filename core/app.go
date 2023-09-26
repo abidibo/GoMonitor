@@ -104,6 +104,13 @@ func Stats(date string) {
 	fmt.Println("================================================")
 	fmt.Println("Stats for ", date)
 	fmt.Println("================================================")
+	total, err := utils.GetTotalDateTimeMinutes("abidibo", date)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Total time ", fmt.Sprintf("%d", total), " minutes\n")
+	}
+
 	processes, err := utils.GetAllDateProcesses("abidibo", date, 20)
 	if err != nil {
 		fmt.Println(err)
@@ -113,7 +120,7 @@ func Stats(date string) {
 			if err != nil {
 				fmt.Println(err)
 			} else {
-				fmt.Println("Process ", fmt.Sprintf("%25s", p), fmt.Sprintf("%4d", total), " minutes")
+				fmt.Println(fmt.Sprintf("%-25s", p), fmt.Sprintf("%4d", total), " minutes")
 			}
 		}
 	}

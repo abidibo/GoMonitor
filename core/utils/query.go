@@ -50,6 +50,18 @@ func GetTotalTodayTimeMinutes(user string) (int, error) {
 	}
 }
 
+func GetTotalDateTimeMinutes(user string, date string) (int, error) {
+	stm, err := db.DB().C.Prepare("SELECT SUM(total_time_minutes) FROM log WHERE user = ? AND date(timestamp) = ?")
+	if err != nil {
+		logger.ZapLog.Error("Cannot get total day time", err)
+		return 0, err
+	} else {
+		var totalMinutes int
+		stm.QueryRow(user, date).Scan(&totalMinutes)
+		return totalMinutes, nil
+	}
+}
+
 func GetTotalProcessTimeMinutes(user string, processName string, date string) (int, error) {
 	// all processes
 	// SELECT DISTINCT name, SUM(total_time_minutes) as tot FROM (SELECT p.id, p.log_id, p.name, l.total_time_minutes from log_process as p, log as l WHERE l.user = 'abidibo' AND date(l.timestamp) = '2023-09-25' AND p.log_id = l.id GROUP BY p.log_id, p.name) GROUP BY name ORDER BY tot DESC;
