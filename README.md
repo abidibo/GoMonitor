@@ -35,6 +35,18 @@ You can also run it to show usage stats:
 $ ./gomonitor stats 2023-09-25
 ```
 
+## How it worlks
+
+GoMonitor collects system usage data in a sqlite3 database which is saved in `config.app.homePath/gomonitor.db`.
+
+The configuration file is a json which must exists in `/etc/gomonitor.json`.
+
+Logs are saved in in `config.app.homePath/gomonitor.log`.
+
+## Uninstall
+
+Simply remove your cloned repo and the `config.app.homePath` folder.
+
 ## TODO
 
 - Run as root and get logged in users
