@@ -35,7 +35,7 @@ You can also run it to show usage stats:
 $ ./gomonitor stats 2023-09-25
 ```
 
-## How it worlks
+## How it works
 
 GoMonitor collects system usage data in a sqlite3 database which is saved in `config.app.homePath/gomonitor.db`.
 
