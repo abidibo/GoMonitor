@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"math"
-	"os/user"
 	"sort"
 	"time"
 
@@ -26,20 +25,17 @@ func Run() {
 	logIntervalMinutes := viper.GetInt("app.logIntervalMinutes")
 
 	// get current user
-	logger.ZapLog.Debug("Retrieving current user")
-	currentUser, err := user.Current()
+	currentUser, err := utils.GetCurrentUser()
 	if err != nil {
-		logger.ZapLog.Error("Cannot get current user")
-	} else {
-		logger.ZapLog.Info("Current user ", currentUser.Username)
+		panic("Cannot get current user")
 	}
 
 	// Notify user about remaining time
-	timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser.Username)
+	timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
 	if err != nil {
-		logger.ZapLog.Error("Cannot get screen time limit for user ", currentUser.Username, err)
+		logger.ZapLog.Error("Cannot get screen time limit for user ", currentUser, err)
 	} else {
-		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser.Username)
+		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser)
 		if err != nil {
 			logger.ZapLog.Error("Cannot get today total time ", err)
 		} else {
@@ -57,7 +53,7 @@ func Run() {
 			cpuUsage, _ := process.CPUPercent()
 			memoryUsage, _ := process.MemoryPercent()
 			u, _ := process.Username()
-			if u == currentUser.Username && (cpuUsage > 0 || memoryUsage > 0) {
+			if u == currentUser && (cpuUsage > 0 || memoryUsage > 0) {
 				// add process to list if it belongs to current user and is not in the list
 				log := ProcessLog{Name: name, CpuPercent: cpuUsage, MemoryPercent: memoryUsage}
 				logProcesses = append(logProcesses, log)
@@ -68,24 +64,24 @@ func Run() {
 		})
 
 		// insert log into DB
-		elapsed := int(math.Ceil(time.Since(startTime).Minutes()))
+		elapsed := int(math.Round(time.Since(startTime).Minutes()))
 		startTime = time.Now() // reset start time
-		logId, err := utils.InsertLog(currentUser.Username, elapsed)
+		logId, err := utils.InsertLog(currentUser, elapsed)
 		if err == nil {
 			for _, p := range logProcesses {
 				utils.InsertProcessLog(logId, p.Name, p.CpuPercent, p.MemoryPercent)
 			}
 		}
 
-		// get sum of total_time_minutes for current day and user
-		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser.Username)
+		// get sum of partial_time_minutes for current day and user
+		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser)
 		if err == nil {
 			// check if total time usage has exceeded the limit
 			if timeScreenLimit > 0 {
 				if totalMinutes > timeScreenLimit {
-					logger.ZapLog.Info("Limit exceeded for user ", currentUser.Username, " ", totalMinutes, " minutes")
+					logger.ZapLog.Info("Limit exceeded for user ", currentUser, " ", totalMinutes, " minutes")
 					// logout user
-					err = utils.LogoutUser(currentUser.Username)
+					err = utils.LogoutUser(currentUser)
 					if err != nil {
 						// try to shutdown pc
 						utils.Shutdown()
@@ -100,32 +96,23 @@ func Run() {
 	}
 }
 
-func Stats(date string) {
-
-	logger.ZapLog.Debug("Retrieving current user")
-	currentUser, err := user.Current()
-	if err != nil {
-		logger.ZapLog.Error("Cannot get current user")
-	} else {
-		logger.ZapLog.Info("Current user ", currentUser.Username)
-	}
-
+func Stats(user string, date string) {
 	fmt.Println("================================================")
-	fmt.Println("Stats for ", date)
+	fmt.Println("Stats for ", user, " ", date)
 	fmt.Println("================================================")
-	total, err := utils.GetTotalDateTimeMinutes(currentUser.Username, date)
+	total, err := utils.GetTotalDateTimeMinutes(user, date)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println("Total time ", fmt.Sprintf("%d", total), " minutes\n")
 	}
 
-	processes, err := utils.GetAllDateProcesses(currentUser.Username, date, 20)
+	processes, err := utils.GetAllDateProcesses(user, date, 20)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		for _, p := range processes {
-			total, err := utils.GetTotalProcessTimeMinutes(currentUser.Username, p, date)
+			total, err := utils.GetTotalProcessTimeMinutes(user, p, date)
 			if err != nil {
 				fmt.Println(err)
 			} else {

@@ -2,10 +2,24 @@ package utils
 
 import (
 	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/abidibo/gomonitor/logger"
 )
+
+func GetCurrentUser() (string, error) {
+	cmd := exec.Command("who")
+	out, err := cmd.Output()
+	if err != nil {
+		logger.ZapLog.Error("Cannot get current user")
+		return "", err
+	} else {
+		logger.ZapLog.Info("Current user ", string(out))
+		parts := strings.Split(string(out), " ")
+		return parts[0], nil
+	}
+}
 
 func LogoutUser(user string) error {
 	cmd := exec.Command("pkill", "-KILL", "-u", user)

@@ -51,13 +51,13 @@ func InitDatabase() {
 	// id: auto increment
 	// timestamp: timestamp of the log
 	// user string
-	// total_time_minutes: total time usage for current day
+	// partial_time_minutes: total time usage for current day
 	stmt := `
 CREATE TABLE IF NOT EXISTS log (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
 user TEXT,
-total_time_minutes INTEGER
+partial_time_minutes INTEGER
 );
 		`
 	client := DB()

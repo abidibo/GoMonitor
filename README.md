@@ -49,5 +49,5 @@ Simply remove your cloned repo and the `config.app.homePath` folder.
 
 ## TODO
 
-- Run as root and get logged in users
+- Provide gnome notifications even if running as root
 - Better stats
