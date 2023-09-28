@@ -101,22 +101,31 @@ func Run() {
 }
 
 func Stats(date string) {
+
+	logger.ZapLog.Debug("Retrieving current user")
+	currentUser, err := user.Current()
+	if err != nil {
+		logger.ZapLog.Error("Cannot get current user")
+	} else {
+		logger.ZapLog.Info("Current user ", currentUser.Username)
+	}
+
 	fmt.Println("================================================")
 	fmt.Println("Stats for ", date)
 	fmt.Println("================================================")
-	total, err := utils.GetTotalDateTimeMinutes("abidibo", date)
+	total, err := utils.GetTotalDateTimeMinutes(currentUser.Username, date)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println("Total time ", fmt.Sprintf("%d", total), " minutes\n")
 	}
 
-	processes, err := utils.GetAllDateProcesses("abidibo", date, 20)
+	processes, err := utils.GetAllDateProcesses(currentUser.Username, date, 20)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		for _, p := range processes {
-			total, err := utils.GetTotalProcessTimeMinutes("abidibo", p, date)
+			total, err := utils.GetTotalProcessTimeMinutes(currentUser.Username, p, date)
 			if err != nil {
 				fmt.Println(err)
 			} else {
