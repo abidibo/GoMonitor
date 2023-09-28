@@ -39,7 +39,7 @@ func Run() {
 	if err != nil {
 		logger.ZapLog.Error("Cannot get screen time limit for user ", currentUser.Username, err)
 	} else {
-		totalMinutes, err := utils.GetTodayTimeMinutes(currentUser.Username)
+		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser.Username)
 		if err != nil {
 			logger.ZapLog.Error("Cannot get today total time ", err)
 		} else {

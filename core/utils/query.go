@@ -6,17 +6,6 @@ import (
 	"github.com/abidibo/gomonitor/logger"
 )
 
-func GetTodayTimeMinutes(user string) (int, error) {
-	stm, err := db.DB().C.Prepare("SELECT SUM(total_time_minutes) FROM log WHERE user = ? AND date(timestamp) = date('now')")
-	if err != nil {
-		return 0, err
-	} else {
-		var totalMinutes int
-		stm.QueryRow(user).Scan(&totalMinutes)
-		return totalMinutes, nil
-	}
-}
-
 func InsertLog(user string, totalMinutes int) (int64, error) {
 	result, err := db.DB().C.Exec("INSERT INTO log (user, total_time_minutes) VALUES (?, ?)", user, totalMinutes)
 
