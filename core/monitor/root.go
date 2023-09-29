@@ -23,16 +23,19 @@ func RunAsRoot() {
 	// every logIntervalMinutes minutes we log
 	logIntervalMinutes := viper.GetInt("app.logIntervalMinutes")
 
-	// get current user
-	currentUser, err := utils.GetCurrentUser()
-	if err != nil {
-		panic("Cannot get current user")
-	}
-
-	timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
-
 	// keep program running
 	for {
+
+		// get current user
+		currentUser, err := utils.GetCurrentUser()
+		if err != nil {
+			logger.ZapLog.Error("Cannot get current user")
+		} else {
+			logger.ZapLog.Debug("Current user ", currentUser)
+		}
+
+		timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
+
 		logger.ZapLog.Debug("Retrieving current user processes")
 		logProcesses := make([]ProcessLog, 0)
 		processes, _ := process.Processes()
