@@ -4,11 +4,25 @@ Monitor system usage, a sort of parental control.
 
 ![ui](ui.png "GoMonitor UI")
 
-It logs processes and their time usage.
+So, here is the thing:
 
-Logs (total time and processes time) are stored in a sqlite3 db, when time screen limit is reached, the user is logged out form the system.
+- I needed a way to avoid having my son turn in to a fucking money playing Minecraft.
+- I tried Timekpr-nExT and it didn't work well.
+- I'm impatient and instead of make it work better,I decided to write something myself.
 
-Provides stats and a super simple interface to view remaining time.
+I needed a few simple stuff:
+
+- Check the total time spent and logout the user when it reaches a limit
+- View some statistics about what the user did
+
+Here come GoMonitor (which is a really bad piece of software).
+
+Features:
+
+- Check the total time spent and logout the user when it reaches a limit
+- View some statistics about what the user did
+
+Lol
 
 ## Getting started
 
@@ -18,7 +32,7 @@ Clone this repo
 $ git clone git@github.com:abidibo/GoMonitor.git
 ```
 
-Create the file `/etc/gomonitor.json`
+Create the file `/etc/gomonitor.json`. Yes, it's a json file. Yes GoMonitor does not provide a shiny root user interface to configure it.
 
 ```
 {
@@ -32,13 +46,13 @@ Create the file `/etc/gomonitor.json`
 }
 ```
 
+GoMonitor writes its stuff (db and logs) in the `homePath` directory.
+
+GoMonitor logs out `USER` when it reaches the `screenTimeLimitMinutes`
+
+GoMonitor logs every `logIntervalMinutes` (and uses this interval to aggregate the time spent by the user, so keep it small)
+
 Replace `USER` with the user you want to monitor.
-
-Every `logIntervalMinutes` minutes, a new log row is created (and the partial time interval is stored), then all active processes in that moment are associated to that log row.
-When calculating total time spent for a process, we simply sum up all the partial times of the related log rows.
-So this is not super precise, if the system halts in the middle of a log interval, it will not be counted.
-For this reason it's better to avoid configuring a big interval.
-
 
 Run at startup as root to start the monitor:
 ```
