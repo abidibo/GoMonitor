@@ -1,6 +1,6 @@
 # GoMonitor
 
-Monitor system usage, a sort of parental control.
+Monitor system usage, a sort of parental control (for linux systems).
 
 ![ui](ui.png "GoMonitor UI")
 
