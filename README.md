@@ -6,15 +6,15 @@ Monitor system usage, a sort of parental control.
 
 So, here is the thing:
 
-- I needed a way to avoid having my son turn into a fucking money playing Minecraft.
+- I needed a way to avoid having my son turn into a fucking monkey playing Minecraft.
 - I tried Timekpr-nExT and it didn't work well.
 - I'm impatient and instead of make it work better, I decided to write something myself.
 - I suck at programming this stuff, I'm not used to it and I don't have too much time to waste bothering my family.
 
 I needed a few simple stuff:
 
-- Check the total time spent and logout the user when it reaches a limit
-- View some statistics about what the user did
+- Check the total time spent and logout the user when it reaches a limit.
+- View some statistics about what the user did.
 
 Here comes GoMonitor (which is a really bad piece of software).
 
@@ -62,16 +62,16 @@ Replace `USER` with the user you want to monitor.
 
 ### Usage
 
-GoMonitor behaves differently when running as root or as user. Fact.
+GoMonitor behaves differently when running as root or as normal user. Fact.
 
-GoMonitor has two subcommands available `monitor` and `stats`
+GoMonitor has two subcommands available: `monitor` and `stats`
 
 #### Monitor
 
 The monitor subcommand is the boss.
 
-If run as root user, it starts to collect data about all logged user. It write this data to an sqlite3 database in the `homePath` folder. When a user reaches its limit, it logs him out.
-It collects the data every `logIntervalMinutes` minutes, and in particular it stores all the process there were running at that moment (and were wasting at least some memory or cpu).
+If run as root user, it starts to collect data about all logged user. It writes this data to an sqlite3 database in the `homePath` folder. When a user reaches its limit, it logs him out.
+It collects the data every `logIntervalMinutes` minutes, and in particular it records all the processes there were running at that moment (and were wasting at least some memory or cpu).
 
 If run as user it stays awake, displays a system tray icon and notifies the user when it starts, when half of the time limit is reached and when it reaches the time limit. If the user clicks the tray icon, then a super cool dialog appears informing the user about the time spent.
 
@@ -79,7 +79,7 @@ If run as user it stays awake, displays a system tray icon and notifies the user
 
 Logs are saved in in `config.app.homePath/gomonitor.log`.
 
-You should make both running at system startup. For example you can add a root crontab entry with `@reboot` keyword for the root part, and you can just configure it as a startup application for a normal user.
+You should make both running at system startup. For example you can add a root crontab entry with the `@reboot` keyword for the root part, and you can just configure it as a startup application for a normal user.
 
 The command is the same:
 
@@ -99,6 +99,13 @@ $ ./gomonitor stats -h
 With the `stats` subcommand you can see some statistics about the user. If run as root you must specify the user and optionally the date (default today). If run as normal user just the date.
 
 ![stats](stats.png "GoMonitor Stats")
+
+```
+# ./gomonitor stats -u rufy -d 2023-09-29
+# ./gomonitor stats -u rufy
+$ ./gomonitor stats -d 2023-09-29
+$ ./gomonitor stats
+```
 
 ## Uninstall
 
