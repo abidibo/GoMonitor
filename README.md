@@ -86,6 +86,7 @@ At any time you can check stats with `gomonitor stats` command
 Simply remove your cloned repo and the `config.app.homePath` folder.
 
 ## TODO
+- Metter time detectiona mangement (suspend, hibernate, etc...)
 - Better UI
 - Better stats
 - Maybe add limits per process? 
