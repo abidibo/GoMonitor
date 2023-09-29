@@ -26,13 +26,25 @@ Create the file `/etc/gomonitor.json`
 
 Replace `USER` with the user you want to monitor.
 
-Run at startup.
+Run at startup as root to start the monitor:
+```
+# ./gomonitor monitor
+```
 
-If run without arguments the program stays alive and collects data.
-You can also run it to show usage stats:
+Run at startup as user to get notifications:
+```
+$ ./gomonitor monitor
+```
+
+You can view stats for users (if root, otherwise only for the current user) and date:
 
 ```
-$ ./gomonitor stats 2023-09-25
+$ ./gomonitor stats -u USER -d 2023-09-25
+```
+
+For all available options:
+```
+$ ./gomonitor -h
 ```
 
 ## How it works
@@ -48,6 +60,7 @@ Logs are saved in in `config.app.homePath/gomonitor.log`.
 Simply remove your cloned repo and the `config.app.homePath` folder.
 
 ## TODO
-
-- Provide gnome notifications even if running as root
+- Some sort of gui for user
 - Better stats
+- Maybe add limits per process? 
+
