@@ -1,12 +1,26 @@
 package utils
 
 import (
+	"os"
 	"os/exec"
+	"os/user"
 	"strings"
 	"syscall"
 
 	"github.com/abidibo/gomonitor/logger"
 )
+
+func IsRunningAsRoot() bool {
+	return os.Geteuid() == 0
+}
+
+func GetRunningUsername() (string, error) {
+	pUser, err := user.Current()
+	if err != nil {
+		return "", nil
+	}
+	return pUser.Username, nil
+}
 
 func GetCurrentUser() (string, error) {
 	cmd := exec.Command("who")

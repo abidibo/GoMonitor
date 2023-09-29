@@ -3,11 +3,9 @@ package monitor
 import (
 	"fmt"
 	"math"
-	"os"
 	"sort"
 	"time"
 
-	"github.com/abidibo/gomonitor/core/stats"
 	"github.com/abidibo/gomonitor/core/utils"
 	"github.com/abidibo/gomonitor/logger"
 	"github.com/shirou/gopsutil/v3/process"
@@ -21,11 +19,6 @@ type ProcessLog struct {
 }
 
 func Run() {
-	if len(os.Args) > 1 {
-		// show stats
-		stats.Stats()
-	}
-
 	// now
 	startTime := time.Now()
 	// every logIntervalMinutes minutes we log

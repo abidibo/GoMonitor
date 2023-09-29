@@ -2,29 +2,18 @@ package stats
 
 import (
 	"fmt"
-	"os"
-	"time"
 
 	"github.com/abidibo/gomonitor/core/utils"
 )
 
-func Stats() {
+func Run(user string, date string) {
+	var err error
 
-	var user string
-	var date string
-
-	if len(os.Args) > 2 && os.Args[1] == "stats" {
-		if len(os.Args) < 4 {
-			currentTime := time.Now()
-			user = os.Args[2]
-			date = currentTime.Format("2006-01-02")
-		} else {
-			user = os.Args[2]
-			date = os.Args[3]
+	if !utils.IsRunningAsRoot() {
+		user, err = utils.GetRunningUsername()
+		if err != nil {
+			panic("Cannot get current user")
 		}
-	} else if len(os.Args) > 1 {
-		utils.Help()
-		return
 	}
 
 	fmt.Println("================================================")

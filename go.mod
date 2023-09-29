@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/TheCreeper/go-notify v0.2.0 // indirect
+	github.com/akamensky/argparse v1.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/godbus/dbus/v5 v5.0.3 // indirect
