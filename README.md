@@ -6,16 +6,17 @@ Monitor system usage, a sort of parental control.
 
 So, here is the thing:
 
-- I needed a way to avoid having my son turn in to a fucking money playing Minecraft.
+- I needed a way to avoid having my son turn into a fucking money playing Minecraft.
 - I tried Timekpr-nExT and it didn't work well.
-- I'm impatient and instead of make it work better,I decided to write something myself.
+- I'm impatient and instead of make it work better, I decided to write something myself.
+- I suck at programming this stuff, I'm not used to it and I don't have too much time to waste bothering my family.
 
 I needed a few simple stuff:
 
 - Check the total time spent and logout the user when it reaches a limit
 - View some statistics about what the user did
 
-Here come GoMonitor (which is a really bad piece of software).
+Here comes GoMonitor (which is a really bad piece of software).
 
 Features:
 
@@ -26,11 +27,15 @@ Lol
 
 ## Getting started
 
+### Installation
+
 Clone this repo
 
 ```
 $ git clone git@github.com:abidibo/GoMonitor.git
 ```
+
+### Configuration
 
 Create the file `/etc/gomonitor.json`. Yes, it's a json file. Yes GoMonitor does not provide a shiny root user interface to configure it.
 
@@ -46,6 +51,7 @@ Create the file `/etc/gomonitor.json`. Yes, it's a json file. Yes GoMonitor does
 }
 ```
 
+
 GoMonitor writes its stuff (db and logs) in the `homePath` directory.
 
 GoMonitor logs out `USER` when it reaches the `screenTimeLimitMinutes`
@@ -54,46 +60,43 @@ GoMonitor logs every `logIntervalMinutes` (and uses this interval to aggregate t
 
 Replace `USER` with the user you want to monitor.
 
-Run at startup as root to start the monitor:
-```
-# ./gomonitor monitor
-```
+### Usage
 
-Run at startup as user to get notifications:
+GoMonitor behaves differently when running as root or as user. Fact.
+
+GoMonitor has two subcommands available `monitor` and `stats`
+
+#### Monitor
+
+The monitor subcommand is the boss.
+
+If run as root user, it starts to collect data about all logged user. It write this data to an sqlite3 database in the `homePath` folder. When a user reaches its limit, it logs him out.
+It collects the data every `logIntervalMinutes` minutes, and in particular it stores all the process there were running at that moment (and were wasting at least some memory or cpu).
+
+If run as user it stays awake, displays a system tray icon and notifies the user when it starts, when half of the time limit is reached and when it reaches the time limit. If the user clicks the tray icon, then a super cool dialog appears informing the user about the time spent.
+
+![ui](ui.png "GoMonitor UI")
+
+Logs are saved in in `config.app.homePath/gomonitor.log`.
+
+You should make both running at system startup. For example you can add a root crontab entry with `@reboot` keyword for the root part, and you can just configure it as a startup application for a normal user.
+
+The command is the same:
+
 ```
 $ ./gomonitor monitor
 ```
 
-You can view stats for users (if root, otherwise only for the current user) and date:
-
-```
-$ ./gomonitor stats -u USER -d 2023-09-25
-```
-
-For all available options:
+By the way, you can read some help text:
 ```
 $ ./gomonitor -h
+$ ./gomonitor monitor -h
+$ ./gomonitor stats -h
 ```
 
-## How it works
+#### Statistics
 
-GoMonitor collects system usage data in a sqlite3 database which is saved in `config.app.homePath/gomonitor.db`.
-
-The configuration file is a json which must exists in `/etc/gomonitor.json`.
-
-Logs are saved in in `config.app.homePath/gomonitor.log`.
-
-## How to use it
-
-1. Run `gomonitot monitor` as root user at startup
-2. Run `gomonitor monitor` as user at startup
-
-The controlled user will receive notifications about time usage when the application stats, when it reaches half time and when it approximately reaches the time limit.
-Also the user will have a system tray icon that when clicked will open a dialog showing the used time.
-
-![ui](ui.png "GoMonitor UI")
-
-At any time you can check stats with `gomonitor stats` command
+With the `stats` subcommand you can see some statistics about the user. If run as root you must specify the user and optionally the date (default today). If run as normal user just the date.
 
 ![stats](stats.png "GoMonitor Stats")
 
@@ -101,8 +104,12 @@ At any time you can check stats with `gomonitor stats` command
 
 Simply remove your cloned repo and the `config.app.homePath` folder.
 
+## Just to say
+
+I really didn't have time (at the moment) to implement it the right way. There may be concurrency issues because two different processes uses the same log and database, I'm not sure, I should read carefully all the third library documentation, maybe I'll do it. Just keep in mind that.
+
 ## TODO
-- Metter time detectiona mangement (suspend, hibernate, etc...)
+- Better time detection mangement (suspend, hibernate, etc...)
 - Better UI
 - Better stats
 - Maybe add limits per process? 
