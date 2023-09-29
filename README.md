@@ -2,6 +2,8 @@
 
 Monitor system usage, a sort of parental control.
 
+![ui](ui.png "GoMonitor UI")
+
 It logs processes and their time usage.
 
 Logs (total time and processes time) are stored in a sqlite3 db, when time screen limit is reached, the user is logged out form the system.
