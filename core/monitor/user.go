@@ -1,17 +1,92 @@
 package monitor
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
 	"time"
 
 	"github.com/abidibo/gomonitor/core/utils"
 	"github.com/abidibo/gomonitor/logger"
+	"github.com/gen2brain/iup-go/iup"
+	"github.com/getlantern/systray/example/icon"
 	"github.com/spf13/viper"
 )
 
+// entry point
 func RunNonRoot() {
-	logIntervalMinutes := viper.GetInt("app.logIntervalMinutes")
+	// spawn a thread to monitor
+	go notificationsThread()
 
+	// main application window
+	iup.Open()
+	// closing the application, do not stop the main loop!
+	iup.SetGlobal("LOCKLOOP", "YES")
+	// create window
+	createMainWindow()
+	// main loop
+	iup.MainLoop()
+}
+
+func createMainWindow() {
+	img, _ := png.Decode(bytes.NewReader(icon.Data))
+	iup.ImageFromImage(img).SetHandle("goMonitorIcon")
+
+	// today usage time
+	user, _ := utils.GetCurrentUser()
+	timeScreenLimit, _ := utils.GetScreenTimeLimitMinutes(user)
+	totalTodayMinutes, _ := utils.GetTotalTodayTimeMinutes(user)
+	totalTodayTimeLabel := iup.Label("Total minutes today").SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER`)
+	totalTodayTimeValue := iup.Label(fmt.Sprintf("%d/%d", totalTodayMinutes, timeScreenLimit)).SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER, PADDING=10x10`)
+	btnRefresh := iup.Button("Refresh").SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER`)
+
+	iup.SetCallback(btnRefresh, "ACTION", iup.ActionFunc(btnRefreshCb))
+
+	iup.SetHandle("totalTodayTimeValue", totalTodayTimeValue)
+
+	win := iup.Dialog(
+		iup.Vbox(
+			totalTodayTimeLabel,
+			totalTodayTimeValue,
+			btnRefresh,
+		).SetAttributes(`MARGIN=20x20`),
+	).SetAttributes(map[string]string{
+		"TITLE":     "GoMonitor",
+		"TRAY":      "YES",
+		"TRAYTIP":   "The best monitor app in the world",
+		"TRAYIMAGE": "goMonitorIcon",
+		"ICON":      "goMonitorIcon",
+		"SIZE":      "200x70",
+		"RESIZE":    "NO",
+	}).SetCallback("TRAYCLICK_CB", iup.TrayClickFunc(trayClickCb)).SetHandle("win")
+	// trick to open the main window, dhow tray icon and close it
+	iup.Show(win)
+	iup.Hide(win)
+}
+
+func btnRefreshCb(ih iup.Ihandle) int {
+	updateMainWindow()
+	return iup.DEFAULT
+}
+func updateMainWindow() {
+	user, _ := utils.GetCurrentUser()
+	timeScreenLimit, _ := utils.GetScreenTimeLimitMinutes(user)
+	totalTodayMinutes, _ := utils.GetTotalTodayTimeMinutes(user)
+	totalTodayTimeValue := iup.GetHandle("totalTodayTimeValue")
+	totalTodayTimeValue.SetAttribute("TITLE", fmt.Sprintf("%d/%d", totalTodayMinutes, timeScreenLimit))
+}
+
+func trayClickCb(ih iup.Ihandle, but, pressed, dclick int) int {
+	if but == 1 && pressed > 0 {
+		updateMainWindow()
+		iup.Show(iup.GetHandle("win"))
+	}
+	return iup.DEFAULT
+}
+
+// notify user at the beginning, half time and end time reached
+func notificationsThread() {
+	logIntervalMinutes := viper.GetInt("app.logIntervalMinutes")
 	// get current user
 	currentUser, err := utils.GetCurrentUser()
 	if err != nil {
@@ -46,6 +121,7 @@ func RunNonRoot() {
 			}
 		}
 
-		time.Sleep(time.Duration(logIntervalMinutes) * time.Minute)
+		time.Sleep(time.Duration(logIntervalMinutes) * time.Second)
 	}
+
 }
