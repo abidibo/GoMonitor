@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/abidibo/gomonitor/core"
 	"github.com/abidibo/gomonitor/db"
@@ -35,20 +34,6 @@ func main() {
 	// Init database
 	db.InitDatabase()
 
-	// view statistics
-	if len(os.Args) > 2 && os.Args[1] == "stats" {
-		if len(os.Args) < 4 {
-			currentTime := time.Now()
-			core.Stats(os.Args[2], currentTime.Format("2006-01-02"))
-		} else {
-			core.Stats(os.Args[2], os.Args[3])
-		}
-		return
-	} else if len(os.Args) > 1 {
-		fmt.Println("Usage: gomonitor stats [user] [date?]")
-		return
-	}
-
-	// run and log
+	// Run app
 	core.Run()
 }
