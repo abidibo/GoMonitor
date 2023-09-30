@@ -6,10 +6,10 @@ import (
 	"image/png"
 	"time"
 
+	"github.com/abidibo/gomonitor/core"
 	"github.com/abidibo/gomonitor/core/utils"
 	"github.com/abidibo/gomonitor/logger"
 	"github.com/gen2brain/iup-go/iup"
-	"github.com/getlantern/systray/example/icon"
 	"github.com/spf13/viper"
 )
 
@@ -29,7 +29,7 @@ func RunNonRoot() {
 }
 
 func createMainWindow() {
-	img, _ := png.Decode(bytes.NewReader(icon.Data))
+	img, _ := png.Decode(bytes.NewReader(core.IconData))
 	iup.ImageFromImage(img).SetHandle("goMonitorIcon")
 
 	// today usage time
