@@ -93,3 +93,32 @@ func Notify(text string) {
 		logger.ZapLog.Error("Cannot show notification ", err)
 	}
 }
+
+func DeleteProcessData(date string) (int64, error) {
+	stm, err := db.DB().C.Exec("DELETE FROM log_process WHERE log_process.log_id IN (select id FROM log WHERE log.timestamp < ?)", date)
+	if err != nil {
+		logger.ZapLog.Error("Cannot delete process data ", err)
+		return 0, err
+	}
+	rowsAffected, err := stm.RowsAffected()
+	if err != nil {
+		logger.ZapLog.Error("Cannot delete process data ", err)
+		return 0, err
+	}
+	return rowsAffected, nil
+}
+
+func DeleteLogData(date string) (int64, error) {
+
+	stm, err := db.DB().C.Exec("DELETE FROM log WHERE log.timestamp < ?", date)
+	if err != nil {
+		logger.ZapLog.Error("Cannot delete log data ", err)
+		return 0, err
+	}
+	rowsAffected, err := stm.RowsAffected()
+	if err != nil {
+		logger.ZapLog.Error("Cannot delete log data ", err)
+		return 0, err
+	}
+	return rowsAffected, nil
+}

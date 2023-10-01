@@ -46,7 +46,8 @@ Create the file `/etc/gomonitor.json`. Yes, it's a json file. Yes GoMonitor does
     "screenTimeLimitMinutes": {
       "USER": 120,
     },
-    "logIntervalMinutes": 10
+    "logIntervalMinutes": 10,
+    "retainPeriodDays": 10
   }
 }
 ```
@@ -57,6 +58,8 @@ GoMonitor writes its stuff (db and logs) in the `homePath` directory.
 GoMonitor logs out `USER` when it reaches the `screenTimeLimitMinutes`
 
 GoMonitor logs every `logIntervalMinutes` (and uses this interval to aggregate the time spent by the user, so keep it small)
+
+GoMonitor keeps data and logs for `retainPeriodDays` days
 
 Replace `USER` with the user you want to monitor.
 

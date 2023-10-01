@@ -2,6 +2,9 @@ package monitor
 
 import (
 	"math"
+	"os"
+	"path/filepath"
+	"regexp"
 	"sort"
 	"time"
 
@@ -22,6 +25,9 @@ func RunAsRoot() {
 	startTime := time.Now()
 	// every logIntervalMinutes minutes we log
 	logIntervalMinutes := viper.GetInt("app.logIntervalMinutes")
+
+	// remove old data and log files
+	cleanup()
 
 	// keep program running
 	for {
@@ -83,4 +89,44 @@ func RunAsRoot() {
 
 		time.Sleep(time.Duration(logIntervalMinutes) * time.Minute)
 	}
+}
+
+func cleanup() {
+	retainPeriodDays := viper.GetInt("app.retainPeriodDays")
+	now := time.Now()
+	limit := now.AddDate(0, 0, -1*retainPeriodDays)
+
+	affected, err := utils.DeleteProcessData(limit.Format("2006-01-02"))
+	// clean db process data
+	if err == nil {
+		logger.ZapLog.Info("Removed process data before ", limit, " affected ", affected)
+	}
+
+	affected, err = utils.DeleteLogData(limit.Format("2006-01-02"))
+	// clean db log data
+	if err == nil {
+		logger.ZapLog.Info("Removed log data before ", limit, " affected ", affected)
+	}
+
+	homePath := viper.GetString("app.homePath")
+	filepath.Walk(homePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			logger.ZapLog.Error("Error walking path ", path)
+		}
+		re := regexp.MustCompile(`gomonitor-(\d+).log`)
+		match := re.FindStringSubmatch(info.Name())
+		if len(match) > 0 {
+			dateLayout := "20060102"
+			d, err := time.Parse(dateLayout, match[1])
+			if err == nil {
+				if d.Before(limit) {
+					err := os.Remove(path)
+					if err != nil {
+						logger.ZapLog.Error("Error removing file ", path)
+					}
+				}
+			}
+		}
+		return nil
+	})
 }
