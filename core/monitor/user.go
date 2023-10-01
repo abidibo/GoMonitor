@@ -38,17 +38,53 @@ func createMainWindow() {
 	totalTodayMinutes, _ := utils.GetTotalTodayTimeMinutes(user)
 	totalTodayTimeLabel := iup.Label("Total minutes today").SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER`)
 	totalTodayTimeValue := iup.Label(fmt.Sprintf("%d/%d", totalTodayMinutes, timeScreenLimit)).SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER, PADDING=10x10`)
-	btnRefresh := iup.Button("Refresh").SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER`)
+	// btnRefresh := iup.Button("Refresh").SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER`)
 
-	iup.SetCallback(btnRefresh, "ACTION", iup.ActionFunc(btnRefreshCb))
+	// iup.SetCallback(btnRefresh, "ACTION", iup.ActionFunc(btnRefreshCb))
 
 	iup.SetHandle("totalTodayTimeValue", totalTodayTimeValue)
 
+	var columns []iup.Ihandle
+	columns = append(columns, iup.Label("Process").SetAttributes("FONTSTYLE=Bold"))
+	columns = append(columns, iup.Label("Time (min)").SetAttributes("FONTSTYLE=Bold"))
+	date := time.Now().Format("2006-01-02")
+	processes, err := utils.GetAllDateProcesses(user, date, 20)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		for _, p := range processes {
+			total, err := utils.GetTotalProcessTimeMinutes(user, p, date)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				columns = append(columns, iup.Label(fmt.Sprintf("%s", p)))
+				columns = append(columns, iup.Label(fmt.Sprintf("%d", total)))
+			}
+		}
+	}
+
+	fr := iup.Frame(
+		iup.GridBox(
+			columns...,
+		).SetAttributes(map[string]string{
+			"ALIGNMENTCOL1":  "ARIGHT",
+			"HOMOGENEOUSLIN": "Yes",
+			"HOMOGENEOUSCOL": "Yes",
+			"NUMDIV":         "2",
+			"MARGIN":         "10x10",
+			"GAPLIN":         "5",
+			"GAPCOL":         "15",
+			"SIZE":           fmt.Sprintf("%dx%d", 230, len(columns)*5),
+		}),
+	)
+
 	win := iup.Dialog(
 		iup.Vbox(
-			totalTodayTimeLabel,
-			totalTodayTimeValue,
-			btnRefresh,
+			iup.Vbox(
+				totalTodayTimeLabel,
+				totalTodayTimeValue,
+			),
+			fr,
 		).SetAttributes(`MARGIN=20x20`),
 	).SetAttributes(map[string]string{
 		"TITLE":     "GoMonitor",
@@ -56,8 +92,8 @@ func createMainWindow() {
 		"TRAYTIP":   "The best monitor app in the world",
 		"TRAYIMAGE": "goMonitorIcon",
 		"ICON":      "goMonitorIcon",
-		"SIZE":      "200x70",
-		"RESIZE":    "NO",
+		"SIZE":      "260x300",
+		"RESIZE":    "YES",
 	}).SetCallback("TRAYCLICK_CB", iup.TrayClickFunc(trayClickCb)).SetHandle("win")
 	// trick to open the main window, dhow tray icon and close it
 	iup.Show(win)
