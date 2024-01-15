@@ -155,6 +155,8 @@ func notificationsThread() {
 	}
 
 	for {
+		// if taken from api, we need to refresh it
+		timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
 		// get sum of partial_time_minutes for current day and user
 		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser)
 		if err == nil {

@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"path/filepath"
@@ -21,6 +22,7 @@ type ProcessLog struct {
 }
 
 func RunAsRoot() {
+	fmt.Println("Retrieving current user processes")
 	// now
 	startTime := time.Now()
 	// every logIntervalMinutes minutes we log
@@ -41,6 +43,7 @@ func RunAsRoot() {
 		}
 
 		timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
+		logger.ZapLog.Debug("Current screen time limit ", timeScreenLimit)
 
 		logger.ZapLog.Debug("Retrieving current user processes")
 		logProcesses := make([]ProcessLog, 0)

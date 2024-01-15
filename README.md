@@ -46,6 +46,9 @@ Create the file `/etc/gomonitor.json`. Yes, it's a json file. Yes GoMonitor does
     "screenTimeLimitMinutes": {
       "USER": 120,
     },
+    "screenTimeLimitApiMinutes": {
+      "OTHER_USER": "https://myapi/gomonitor",
+    },
     "logIntervalMinutes": 10,
     "retainPeriodDays": 10
   }
@@ -62,6 +65,14 @@ GoMonitor logs every `logIntervalMinutes` (and uses this interval to aggregate t
 GoMonitor keeps data and logs for `retainPeriodDays` days
 
 Replace `USER` with the user you want to monitor.
+
+You can set a static limit for `screenTimeLimitMinutes` or use an API endpoint for `screenTimeLimitApiMinutes`, in such case you must return the following json response:
+
+``` json
+{
+  "limitMin": 120
+}
+```
 
 ### Usage
 
