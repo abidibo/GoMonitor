@@ -1,123 +1,135 @@
 package monitor
 
 import (
-	"bytes"
 	"fmt"
-	"image/png"
+	"image/color"
 	"time"
 
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 	"github.com/abidibo/gomonitor/core"
 	"github.com/abidibo/gomonitor/core/utils"
 	"github.com/abidibo/gomonitor/logger"
-	"github.com/gen2brain/iup-go/iup"
 	"github.com/spf13/viper"
 )
+
+var a fyne.App
+var w fyne.Window
 
 // entry point
 func RunNonRoot() {
 	// spawn a thread to monitor
 	go notificationsThread()
-
-	// main application window
-	iup.Open()
-	// closing the application, do not stop the main loop!
-	iup.SetGlobal("LOCKLOOP", "YES")
-	// create window
 	createMainWindow()
-	// main loop
-	iup.MainLoop()
 }
 
 func createMainWindow() {
-	img, _ := png.Decode(bytes.NewReader(core.IconData))
-	iup.ImageFromImage(img).SetHandle("goMonitorIcon")
+	a = app.NewWithID("net.abidibo.gomonitor")
+	w = a.NewWindow("GoMonitor")
 
+	if desk, ok := a.(desktop.App); ok {
+		m := fyne.NewMenu(
+			"GoMonitor",
+			fyne.NewMenuItem("Stats", func() {
+				w.Show()
+			}),
+			fyne.NewMenuItem("Quit", func() {
+				w.Hide()
+			}),
+		)
+		desk.SetSystemTrayMenu(m)
+		icon := fyne.NewStaticResource("goMonitorIcon", core.IconData)
+		desk.SetSystemTrayIcon(icon)
+	}
+
+	updateWindowContent()
+	go keepUpdatingWindow()
+
+	w.SetCloseIntercept(func() {
+		w.Hide()
+	})
+	w.Resize(fyne.NewSize(600, 600))
+	w.ShowAndRun()
+}
+
+func keepUpdatingWindow() {
+	for range time.Tick(time.Second * 60) {
+		updateWindowContent()
+	}
+}
+
+func updateWindowContent() {
+	// now label
+	// #ff9900 in rgba: 255, 153, 0
+	nowLabel := canvas.NewText(fmt.Sprintf("Last update: %s", time.Now().Format("15:04:05")), color.RGBA{255, 153, 0, 255})
 	// today usage time
 	user, _ := utils.GetCurrentUser()
 	timeScreenLimit, _ := utils.GetScreenTimeLimitMinutes(user)
 	totalTodayMinutes, _ := utils.GetTotalTodayTimeMinutes(user)
-	totalTodayTimeLabel := iup.Label("Total minutes today").SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER`)
-	totalTodayTimeValue := iup.Label(fmt.Sprintf("%d/%d", totalTodayMinutes, timeScreenLimit)).SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER, PADDING=10x10`)
-	// btnRefresh := iup.Button("Refresh").SetAttributes(`EXPAND=YES, ALIGNMENT=ACENTER`)
+	totalTodayTimeLabel := canvas.NewText(fmt.Sprintf("Total minutes today: %d/%d", totalTodayMinutes, timeScreenLimit), color.RGBA{255, 153, 0, 255})
+	totalTodayTimeLabel.TextStyle.Bold = true
 
-	// iup.SetCallback(btnRefresh, "ACTION", iup.ActionFunc(btnRefreshCb))
-
-	iup.SetHandle("totalTodayTimeValue", totalTodayTimeValue)
-
-	var columns []iup.Ihandle
-	columns = append(columns, iup.Label("Process").SetAttributes("FONTSTYLE=Bold"))
-	columns = append(columns, iup.Label("Time (min)").SetAttributes("FONTSTYLE=Bold"))
+	var data [][]string = nil
+	dims := []int{0, 0}
 	date := time.Now().Format("2006-01-02")
 	processes, err := utils.GetAllDateProcesses(user, date, 20)
+
 	if err != nil {
 		fmt.Println(err)
 	} else {
+		dims[0] = len(processes)
+		dims[1] = 2
+		data = append(data, []string{"Process", "Time (min)"})
 		for _, p := range processes {
 			total, err := utils.GetTotalProcessTimeMinutes(user, p, date)
 			if err != nil {
 				fmt.Println(err)
 			} else {
-				columns = append(columns, iup.Label(fmt.Sprintf("%s", p)))
-				columns = append(columns, iup.Label(fmt.Sprintf("%d", total)))
+				data = append(data, []string{fmt.Sprintf("%s", p), fmt.Sprintf("%d", total)})
 			}
 		}
 	}
 
-	fr := iup.Frame(
-		iup.GridBox(
-			columns...,
-		).SetAttributes(map[string]string{
-			"ALIGNMENTCOL1":  "ARIGHT",
-			"HOMOGENEOUSLIN": "Yes",
-			"HOMOGENEOUSCOL": "Yes",
-			"NUMDIV":         "2",
-			"MARGIN":         "10x10",
-			"GAPLIN":         "5",
-			"GAPCOL":         "15",
-			"SIZE":           fmt.Sprintf("%dx%d", 230, len(columns)*5),
-		}),
-	)
+	list := widget.NewTable(
+		func() (int, int) {
+			return dims[0], dims[1]
+		},
+		func() fyne.CanvasObject {
+			item := widget.NewLabel("wide content")
+			return item
+		},
+		func(i widget.TableCellID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(data[i.Row][i.Col])
+			if i.Row == 0 {
+				o.(*widget.Label).TextStyle.Bold = true
+				o.(*widget.Label).TextStyle.Italic = false
+				o.(*widget.Label).Alignment = fyne.TextAlignLeading
+			} else if i.Col == 0 {
+				o.(*widget.Label).TextStyle.Italic = true
+				o.(*widget.Label).TextStyle.Bold = false
+				o.(*widget.Label).Alignment = fyne.TextAlignLeading
+			} else if i.Col == 1 {
+				o.(*widget.Label).TextStyle.Italic = false
+				o.(*widget.Label).TextStyle.Bold = false
+				o.(*widget.Label).Alignment = fyne.TextAlignTrailing
+			} else {
+				o.(*widget.Label).Alignment = fyne.TextAlignLeading
+				o.(*widget.Label).TextStyle.Italic = false
+				o.(*widget.Label).TextStyle.Bold = false
+			}
+		})
+	list.SetColumnWidth(0, 480)
 
-	win := iup.Dialog(
-		iup.Vbox(
-			iup.Vbox(
-				totalTodayTimeLabel,
-				totalTodayTimeValue,
-			),
-			fr,
-		).SetAttributes(`MARGIN=20x20`),
-	).SetAttributes(map[string]string{
-		"TITLE":     "GoMonitor",
-		"TRAY":      "YES",
-		"TRAYTIP":   "The best monitor app in the world",
-		"TRAYIMAGE": "goMonitorIcon",
-		"ICON":      "goMonitorIcon",
-		"SIZE":      "260x300",
-		"RESIZE":    "YES",
-	}).SetCallback("TRAYCLICK_CB", iup.TrayClickFunc(trayClickCb)).SetHandle("win")
-	// trick to open the main window, dhow tray icon and close it
-	iup.Show(win)
-	iup.Hide(win)
-}
-
-func btnRefreshCb(ih iup.Ihandle) int {
-	updateMainWindow()
-	return iup.DEFAULT
-}
-func updateMainWindow() {
-	user, _ := utils.GetCurrentUser()
-	timeScreenLimit, _ := utils.GetScreenTimeLimitMinutes(user)
-	totalTodayMinutes, _ := utils.GetTotalTodayTimeMinutes(user)
-	totalTodayTimeValue := iup.GetHandle("totalTodayTimeValue")
-	totalTodayTimeValue.SetAttribute("TITLE", fmt.Sprintf("%d/%d", totalTodayMinutes, timeScreenLimit))
-}
-
-func trayClickCb(ih iup.Ihandle, but, pressed, dclick int) int {
-	if but == 1 && pressed > 0 {
-		updateMainWindow()
-		iup.Show(iup.GetHandle("win"))
-	}
-	return iup.DEFAULT
+	header := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), totalTodayTimeLabel, layout.NewSpacer())
+	footer := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), nowLabel, layout.NewSpacer())
+	table := container.New(layout.NewStackLayout(), list)
+	content := container.New(layout.NewBorderLayout(header, footer, nil, nil), header, footer, table)
+	w.SetContent(content)
 }
 
 // notify user at the beginning, half time and end time reached
