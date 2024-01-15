@@ -2,7 +2,7 @@
 
 Monitor system usage, a sort of parental control (for linux systems).
 
-![ui](ui.png "GoMonitor UI")
+![ui](ui-fyne.png "GoMonitor UI")
 
 So, here is the thing:
 
@@ -78,7 +78,7 @@ It collects the data every `logIntervalMinutes` minutes, and in particular it re
 
 If run as user it stays awake, displays a system tray icon and notifies the user when it starts, when half of the time limit is reached and when it reaches the time limit. If the user clicks the tray icon, then a super cool dialog appears informing the user about the time spent.
 
-![ui](ui.png "GoMonitor UI")
+![ui](ui-fyne.png "GoMonitor UI")
 
 Logs are saved in in `config.app.homePath/gomonitor.log`.
 
