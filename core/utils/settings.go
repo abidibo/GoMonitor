@@ -26,7 +26,7 @@ func GetScreenTimeLimitMinutes(user string) (int, error) {
 				var apiLimitBody ApiLimitBody
 				err = json.Unmarshal(body, &apiLimitBody)
 				if err == nil {
-					return apiLimitBody.LimitMin * 100, err
+					return apiLimitBody.LimitMin, err
 				}
 			}
 		}
