@@ -1,8 +1,11 @@
 package monitor
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"math"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -32,6 +35,9 @@ func RunAsRoot() {
 
 	// remove old data and log files
 	cleanup()
+
+	// send stats to server
+	go remoteHighlightsThread()
 
 	// keep program running
 	for {
@@ -127,6 +133,59 @@ func RunAsRoot() {
 		}
 
 		time.Sleep(time.Duration(logIntervalMinutes) * time.Minute)
+	}
+}
+
+type ProcessHighlight struct {
+	ProcessName string `json:"processName"`
+	ProcessTime int    `json:"processTime"`
+}
+
+type Highlights struct {
+	Processes []ProcessHighlight `json:"processes"`
+	User      string             `json:"user"`
+	Date      string             `json:"date"`
+}
+
+func remoteHighlightsThread() {
+	// get current user
+	currentUser, err := utils.GetCurrentUser()
+	if err != nil {
+		logger.ZapLog.Error("Cannot get current user")
+		return
+	}
+
+	var intervalMinutes int
+	var apiUrl string
+	err = viper.UnmarshalKey(fmt.Sprintf("app.highlightsApi.%s.url", currentUser), &apiUrl)
+	err = viper.UnmarshalKey(fmt.Sprintf("app.highlightsApi.%s.intervalMinutes", currentUser), &intervalMinutes)
+
+	if err != nil {
+		logger.ZapLog.Error("Cannot get highlightsApi configuration for user ", currentUser)
+		return
+	}
+
+	for {
+		processesHighlights := []ProcessHighlight{}
+		date := time.Now().Format("2006-01-02")
+		processes, err := utils.GetAllDateProcesses(currentUser, date, 20)
+		for _, p := range processes {
+			total, err := utils.GetTotalProcessTimeMinutes(currentUser, p, date)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				processesHighlights = append(processesHighlights, ProcessHighlight{ProcessName: p, ProcessTime: total})
+			}
+		}
+
+		// post request
+		jsonData, _ := json.Marshal(Highlights{Processes: processesHighlights, User: currentUser, Date: date})
+		_, err = http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			logger.ZapLog.Error("Cannot post highlights to ", apiUrl)
+		}
+
+		time.Sleep(time.Duration(intervalMinutes) * time.Minute)
 	}
 }
 

@@ -210,7 +210,7 @@ func notificationsThread() {
 			}
 		}
 
-		time.Sleep(time.Duration(logIntervalMinutes) * time.Second)
+		time.Sleep(time.Duration(logIntervalMinutes) * time.Minute)
 	}
 
 }
