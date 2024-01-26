@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"github.com/TheCreeper/go-notify"
 	"github.com/abidibo/gomonitor/db"
 	"github.com/abidibo/gomonitor/logger"
 )
@@ -84,13 +83,6 @@ func GetAllDateProcesses(user string, date string, limit int) ([]string, error) 
 			}
 			return processes, nil
 		}
-	}
-}
-
-func Notify(text string) {
-	ntf := notify.NewNotification("GoMonitor", text)
-	if _, err := ntf.Show(); err != nil {
-		logger.ZapLog.Error("Cannot show notification ", err)
 	}
 }
 

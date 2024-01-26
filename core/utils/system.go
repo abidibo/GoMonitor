@@ -7,6 +7,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/TheCreeper/go-notify"
 	"github.com/abidibo/gomonitor/logger"
 )
 
@@ -60,4 +61,11 @@ func Shutdown() error {
 	}
 
 	return nil
+}
+
+func Notify(text string) {
+	ntf := notify.NewNotification("GoMonitor", text)
+	if _, err := ntf.Show(); err != nil {
+		logger.ZapLog.Error("Cannot show notification ", err)
+	}
 }
