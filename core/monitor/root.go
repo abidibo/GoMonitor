@@ -42,8 +42,8 @@ func RunAsRoot() {
 			logger.ZapLog.Debug("Current user ", currentUser)
 		}
 
-		timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
-		logger.ZapLog.Debug("Current screen time limit ", timeScreenLimit)
+		screenTimeConfiguration, err := utils.GetScreenTimeConfiguration(currentUser)
+		logger.ZapLog.Debug("Current screen time limit ", screenTimeConfiguration.ScreenLimitMin)
 
 		logger.ZapLog.Debug("Retrieving current user processes")
 		logProcesses := make([]ProcessLog, 0)
@@ -77,8 +77,8 @@ func RunAsRoot() {
 		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser)
 		if err == nil {
 			// check if total time usage has exceeded the limit
-			if timeScreenLimit > 0 {
-				if totalMinutes > timeScreenLimit {
+			if screenTimeConfiguration.ScreenLimitMin > 0 {
+				if totalMinutes > screenTimeConfiguration.ScreenLimitMin {
 					logger.ZapLog.Info("Limit exceeded for user ", currentUser, " ", totalMinutes, " minutes")
 					// logout user
 					err = utils.LogoutUser(currentUser)

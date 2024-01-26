@@ -69,9 +69,9 @@ func updateWindowContent() {
 	nowLabel := canvas.NewText(fmt.Sprintf("Last update: %s", time.Now().Format("15:04:05")), color.RGBA{255, 153, 0, 255})
 	// today usage time
 	user, _ := utils.GetCurrentUser()
-	timeScreenLimit, _ := utils.GetScreenTimeLimitMinutes(user)
+	screenTimeConfiguration, err := utils.GetScreenTimeConfiguration(user)
 	totalTodayMinutes, _ := utils.GetTotalTodayTimeMinutes(user)
-	totalTodayTimeLabel := canvas.NewText(fmt.Sprintf("Total minutes today: %d/%d", totalTodayMinutes, timeScreenLimit), color.RGBA{255, 153, 0, 255})
+	totalTodayTimeLabel := canvas.NewText(fmt.Sprintf("Total minutes today: %d/%d", totalTodayMinutes, screenTimeConfiguration.ScreenLimitMin), color.RGBA{255, 153, 0, 255})
 	totalTodayTimeLabel.TextStyle.Bold = true
 
 	var data [][]string = nil
@@ -142,7 +142,7 @@ func notificationsThread() {
 	}
 
 	// Notify user about remaining time
-	timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
+	screenTimeConfiguration, err := utils.GetScreenTimeConfiguration(currentUser)
 	if err != nil {
 		logger.ZapLog.Error("Cannot get screen time limit for user ", currentUser, err)
 	} else {
@@ -150,22 +150,22 @@ func notificationsThread() {
 		if err != nil {
 			logger.ZapLog.Error("Cannot get today total time ", err)
 		} else {
-			utils.Notify(fmt.Sprintf("Hey rapoide ti tengo d'occhio, di oggi hai ancora %d minuti", timeScreenLimit-totalMinutes))
+			utils.Notify(fmt.Sprintf("Hey rapoide ti tengo d'occhio, di oggi hai ancora %d minuti", screenTimeConfiguration.ScreenLimitMin-totalMinutes))
 		}
 	}
 
 	for {
 		// if taken from api, we need to refresh it
-		timeScreenLimit, err := utils.GetScreenTimeLimitMinutes(currentUser)
+		screenTimeConfiguration, err := utils.GetScreenTimeConfiguration(currentUser)
 		// get sum of partial_time_minutes for current day and user
 		totalMinutes, err := utils.GetTotalTodayTimeMinutes(currentUser)
 		if err == nil {
 			// check if total time usage has exceeded the limit
-			if timeScreenLimit > 0 {
-				if (totalMinutes < timeScreenLimit/2) && (totalMinutes+logIntervalMinutes > timeScreenLimit/2) {
+			if screenTimeConfiguration.ScreenLimitMin > 0 {
+				if (totalMinutes < screenTimeConfiguration.ScreenLimitMin/2) && (totalMinutes+logIntervalMinutes > screenTimeConfiguration.ScreenLimitMin/2) {
 					utils.Notify("Hey rapoide sei più o meno a metà del tuo tempo a disposizione, fai cisti!")
 				}
-				if totalMinutes+logIntervalMinutes > timeScreenLimit {
+				if totalMinutes+logIntervalMinutes > screenTimeConfiguration.ScreenLimitMin {
 					utils.Notify(fmt.Sprintf("Hey rapoide stai facendo il furbo, entro %d minuti ti sloggo!", logIntervalMinutes))
 				}
 			}
