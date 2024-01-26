@@ -52,10 +52,10 @@ func GetScreenTimeConfiguration(user string) (ScrenTimeConfiguration, error) {
 	}
 
 	var timeWindowStop string
-	err = viper.UnmarshalKey(fmt.Sprintf("app.screenTimeWindow.%s.stop", user), &timeWindowStart)
+	err = viper.UnmarshalKey(fmt.Sprintf("app.screenTimeWindow.%s.stop", user), &timeWindowStop)
 
 	if err != nil {
-		timeWindowStart = "00:00"
+		timeWindowStop = "00:00"
 	}
 
 	return ScrenTimeConfiguration{

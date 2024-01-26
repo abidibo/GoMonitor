@@ -75,6 +75,9 @@ func updateWindowContent() {
 	totalTodayTimeLabel := canvas.NewText(fmt.Sprintf("Total minutes today: %d/%d", totalTodayMinutes, screenTimeConfiguration.ScreenLimitMin), color.RGBA{255, 153, 0, 255})
 	totalTodayTimeLabel.TextStyle.Bold = true
 
+	fmt.Println(screenTimeConfiguration.TimeWindowStart, screenTimeConfiguration.TimeWindowStop)
+	screentTimeWindowLabel := canvas.NewText(fmt.Sprintf("Allowed time: %s/%s", screenTimeConfiguration.TimeWindowStart, screenTimeConfiguration.TimeWindowStop), color.RGBA{255, 153, 0, 255})
+
 	var data [][]string = nil
 	processTotalMap := make(map[string]int)
 	processesBodyMap := make(map[string][]string)
@@ -141,7 +144,11 @@ func updateWindowContent() {
 		})
 	list.SetColumnWidth(0, 480)
 
-	header := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), totalTodayTimeLabel, layout.NewSpacer())
+	header := container.New(
+		layout.NewVBoxLayout(),
+		container.New(layout.NewHBoxLayout(), layout.NewSpacer(), totalTodayTimeLabel, layout.NewSpacer()),
+		container.New(layout.NewHBoxLayout(), layout.NewSpacer(), screentTimeWindowLabel, layout.NewSpacer()),
+	)
 	footer := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), nowLabel, layout.NewSpacer())
 	table := container.New(layout.NewStackLayout(), list)
 	content := container.New(layout.NewBorderLayout(header, footer, nil, nil), header, footer, table)

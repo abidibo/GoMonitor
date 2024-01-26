@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/abidibo/gomonitor/core/utils"
@@ -86,6 +88,30 @@ func RunAsRoot() {
 						// try to shutdown pc
 						utils.Shutdown()
 					}
+				}
+			}
+		}
+
+		// check time window
+		now := time.Now()
+		nowInt, _ := strconv.Atoi(strings.Replace(fmt.Sprintf("%02d:%02d", now.Hour(), now.Minute()), ":", "", 1))
+		startInt, err := strconv.Atoi(strings.Replace(screenTimeConfiguration.TimeWindowStart, ":", "", 1))
+		if err != nil {
+			startInt = 0
+		}
+		stopInt, err := strconv.Atoi(strings.Replace(screenTimeConfiguration.TimeWindowStop, ":", "", 1))
+		if err != nil {
+			stopInt = 0
+		}
+
+		if startInt < stopInt {
+			if nowInt < startInt || nowInt > stopInt {
+				logger.ZapLog.Info("User out of time window ", currentUser, " ", nowInt, " minutes")
+				// logout user
+				err = utils.LogoutUser(currentUser)
+				if err != nil {
+					// try to shutdown pc
+					utils.Shutdown()
 				}
 			}
 		}
