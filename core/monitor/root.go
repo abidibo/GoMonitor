@@ -166,7 +166,7 @@ func remoteHighlightsThread() {
 		}
 		processesHighlights := []ProcessHighlight{}
 		date := time.Now().Format("2006-01-02")
-		processes, err := utils.GetAllDateProcesses(currentUser, date, 20)
+		processes, err := utils.GetAllDateProcesses(currentUser, date, 30)
 		for _, p := range processes {
 			total, err := utils.GetTotalProcessTimeMinutes(currentUser, p, date)
 			if err != nil {

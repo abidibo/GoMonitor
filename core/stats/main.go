@@ -27,7 +27,7 @@ func Run(user string, date string) {
 		fmt.Println()
 	}
 
-	processes, err := utils.GetAllDateProcesses(user, date, 20)
+	processes, err := utils.GetAllDateProcesses(user, date, 30)
 	if err != nil {
 		fmt.Println(err)
 	} else {

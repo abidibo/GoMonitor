@@ -84,7 +84,7 @@ func updateWindowContent() {
 	processesBodyMap := make(map[string][]string)
 	dims := []int{0, 0}
 	date := time.Now().Format("2006-01-02")
-	processes, err := utils.GetAllDateProcesses(user, date, 20)
+	processes, err := utils.GetAllDateProcesses(user, date, 30)
 
 	if err != nil {
 		fmt.Println(err)
