@@ -14,6 +14,7 @@ So, here is the thing:
 I needed a few simple stuff:
 
 - Check the total time spent and logout the user when it reaches a limit.
+- Have some sort of downtime functionality
 - View some statistics about what the user did.
 
 Here comes GoMonitor (which is a really bad piece of software).
@@ -21,6 +22,7 @@ Here comes GoMonitor (which is a really bad piece of software).
 Features:
 
 - Check the total time spent and logout the user when it reaches a limit
+- Support a downtime functionality, user is logged out when reaches the time window limit
 - View some statistics about what the user did
 
 Lol
@@ -46,7 +48,13 @@ Create the file `/etc/gomonitor.json`. Yes, it's a json file. Yes GoMonitor does
     "screenTimeLimitMinutes": {
       "USER": 120,
     },
-    "screenTimeLimitApiMinutes": {
+    "screenTimeWindow": {
+      "USER": {
+        "start": "07:00",
+        "stop": "21:00",
+      },
+    },
+    "screenTimeApi": {
       "OTHER_USER": "https://myapi/gomonitor",
     },
     "logIntervalMinutes": 10,
@@ -60,19 +68,25 @@ GoMonitor writes its stuff (db and logs) in the `homePath` directory.
 
 GoMonitor logs out `USER` when it reaches the `screenTimeLimitMinutes`
 
+GoMonitor logs out `USER` if outside of the `screenTimeWindow`
+
 GoMonitor logs every `logIntervalMinutes` (and uses this interval to aggregate the time spent by the user, so keep it small)
 
 GoMonitor keeps data and logs for `retainPeriodDays` days
 
 Replace `USER` with the user you want to monitor.
 
-You can set a static limit for `screenTimeLimitMinutes` or use an API endpoint for `screenTimeLimitApiMinutes`, in such case you must return the following json response:
+You can set a static limits for `screenTimeLimitMinutes` and `screenTimeWindow` or use an API endpoint for `screenTimeApi`, in such case you must return the following json response:
 
 ``` json
 {
-  "limitMin": 120
+  "screenLimitMin": 120,
+  "timeWindowStart": "07:00",
+  "timeWindowStop": "21:00"
 }
 ```
+
+Please note the format of `timeWindowStart` and `timeWindowStop`, that should be `HH:MM`.
 
 ### Usage
 
