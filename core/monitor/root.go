@@ -41,7 +41,6 @@ func RunAsRoot() {
 
 	// keep program running
 	for {
-
 		// get current user
 		currentUser, err := utils.GetCurrentUser()
 		if err != nil {
@@ -148,24 +147,23 @@ type Highlights struct {
 }
 
 func remoteHighlightsThread() {
-	// get current user
-	currentUser, err := utils.GetCurrentUser()
-	if err != nil {
-		logger.ZapLog.Error("Cannot get current user")
-		return
-	}
-
-	var intervalMinutes int
-	var apiUrl string
-	err = viper.UnmarshalKey(fmt.Sprintf("app.highlightsApi.%s.url", currentUser), &apiUrl)
-	err = viper.UnmarshalKey(fmt.Sprintf("app.highlightsApi.%s.intervalMinutes", currentUser), &intervalMinutes)
-
-	if err != nil {
-		logger.ZapLog.Error("Cannot get highlightsApi configuration for user ", currentUser)
-		return
-	}
-
 	for {
+		// get current user
+		currentUser, err := utils.GetCurrentUser()
+		if err != nil {
+			logger.ZapLog.Error("Cannot get current user")
+			return
+		}
+
+		var intervalMinutes int
+		var apiUrl string
+		err = viper.UnmarshalKey(fmt.Sprintf("app.highlightsApi.%s.url", currentUser), &apiUrl)
+		err = viper.UnmarshalKey(fmt.Sprintf("app.highlightsApi.%s.intervalMinutes", currentUser), &intervalMinutes)
+
+		if err != nil {
+			logger.ZapLog.Error("Cannot get highlightsApi configuration for user ", currentUser)
+			return
+		}
 		processesHighlights := []ProcessHighlight{}
 		date := time.Now().Format("2006-01-02")
 		processes, err := utils.GetAllDateProcesses(currentUser, date, 20)
