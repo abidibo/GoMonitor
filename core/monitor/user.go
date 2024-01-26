@@ -77,7 +77,6 @@ func updateWindowContent() {
 	totalTodayTimeLabel := canvas.NewText(fmt.Sprintf("Total minutes today: %d/%d", totalTodayMinutes, screenTimeConfiguration.ScreenLimitMin), color.RGBA{255, 153, 0, 255})
 	totalTodayTimeLabel.TextStyle.Bold = true
 
-	fmt.Println(screenTimeConfiguration.TimeWindowStart, screenTimeConfiguration.TimeWindowStop)
 	screentTimeWindowLabel := canvas.NewText(fmt.Sprintf("Allowed time: %s/%s", screenTimeConfiguration.TimeWindowStart, screenTimeConfiguration.TimeWindowStop), color.RGBA{255, 153, 0, 255})
 
 	var data [][]string = nil
