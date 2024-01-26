@@ -57,6 +57,12 @@ Create the file `/etc/gomonitor.json`. Yes, it's a json file. Yes GoMonitor does
     "screenTimeApi": {
       "OTHER_USER": "https://myapi/gomonitor",
     },
+    "highlightsApi": {
+      "USER": {
+        "url": "https://myapi/gomonitor/highlights",
+        "intervalMinutes": 10
+      }
+    },
     "logIntervalMinutes": 10,
     "retainPeriodDays": 10
   }
@@ -87,6 +93,27 @@ You can set a static limits for `screenTimeLimitMinutes` and `screenTimeWindow` 
 ```
 
 Please note the format of `timeWindowStart` and `timeWindowStop`, that should be `HH:MM`.
+
+GoMonitor logs running processes in order to create stats about programs usage. GoMonitor considers processes which are wasting memory or cpu time as running. In stats and highlights GoMonitor will retrieve the first 30 process ordered by cpu usage and memory consumption. 
+
+You can set an highlight remote api in order to receive stats in real time. The API will be called every `highlightApi.intervalMinutes` minutes, through POST with the following payload:
+
+``` json
+{
+  "date": "2022-01-01",
+  "user": "USER",
+  "processes": [
+    {
+      "processName": "chrome",
+      "processTime": 23      
+    },
+    ...
+  ]
+}
+```
+
+For each process you can see the elapsed time in minutes.
+
 
 ### Usage
 
