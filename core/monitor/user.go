@@ -3,6 +3,7 @@ package monitor
 import (
 	"fmt"
 	"image/color"
+	"sort"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -75,6 +76,8 @@ func updateWindowContent() {
 	totalTodayTimeLabel.TextStyle.Bold = true
 
 	var data [][]string = nil
+	processTotalMap := make(map[string]int)
+	processesBodyMap := make(map[string][]string)
 	dims := []int{0, 0}
 	date := time.Now().Format("2006-01-02")
 	processes, err := utils.GetAllDateProcesses(user, date, 20)
@@ -90,8 +93,21 @@ func updateWindowContent() {
 			if err != nil {
 				fmt.Println(err)
 			} else {
-				data = append(data, []string{fmt.Sprintf("%s", p), fmt.Sprintf("%d", total)})
+				processTotalMap[p] = total
+				processesBodyMap[p] = []string{fmt.Sprintf("%s", p), fmt.Sprintf("%d", total)}
 			}
+		}
+
+		// sort by total time
+		keys := make([]string, 0, len(processTotalMap))
+		for k := range processTotalMap {
+			keys = append(keys, k)
+		}
+		sort.SliceStable(keys, func(i, j int) bool {
+			return processTotalMap[keys[i]] > processTotalMap[keys[j]]
+		})
+		for _, k := range keys {
+			data = append(data, processesBodyMap[k])
 		}
 	}
 
