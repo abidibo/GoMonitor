@@ -126,13 +126,13 @@ GoMonitor has two subcommands available: `monitor` and `stats`
 The monitor subcommand is the boss.
 
 If run as root user, it starts to collect data about all logged user. It writes this data to an sqlite3 database in the `homePath` folder. When a user reaches its limit, it logs him out.
-It collects the data every `logIntervalMinutes` minutes, and in particular it records all the processes there were running at that moment (and were wasting at least some memory or cpu).
+It collects the data every `logIntervalMinutes` minutes, and in particular it records all the processes that were running at that moment (and were wasting at least some memory or cpu).
 
-If run as user it stays awake, displays a system tray icon and notifies the user when it starts, when half of the time limit is reached and when it reaches the time limit. If the user clicks the tray icon, then a super cool dialog appears informing the user about the time spent.
+If run as user it stays awake, displays a system tray icon and notifies the user when it starts, when half of the time limit is reached, when he reaches the time limit and when 10 minutes are left before downtime triggers. If the user clicks the tray icon, then he can open a super cool dialog informing the him about the time spent.
 
 ![ui](ui-fyne.png "GoMonitor UI")
 
-Logs are saved in in `config.app.homePath/gomonitor.log`.
+Logs are saved in `config.app.homePath/gomonitor.log`.
 
 You should make both running at system startup. For example you can add a root crontab entry with the `@reboot` keyword for the root part, and you can just configure it as a startup application for a normal user.
 
