@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"image/color"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -177,6 +179,7 @@ func notificationsThread() {
 		}
 	}
 
+	timeWindowAlertSent := false
 	for {
 		// if taken from api, we need to refresh it
 		screenTimeConfiguration, err := utils.GetScreenTimeConfiguration(currentUser)
@@ -190,6 +193,20 @@ func notificationsThread() {
 				}
 				if totalMinutes+logIntervalMinutes > screenTimeConfiguration.ScreenLimitMin {
 					utils.Notify(fmt.Sprintf("Hey rapoide stai facendo il furbo, entro %d minuti ti sloggo!", logIntervalMinutes))
+				}
+			}
+		}
+
+		// check time window
+		now := time.Now()
+		nowInt, _ := strconv.Atoi(strings.Replace(fmt.Sprintf("%02d:%02d", now.Hour(), now.Minute()), ":", "", 1))
+		startInt, err := strconv.Atoi(strings.Replace(screenTimeConfiguration.TimeWindowStart, ":", "", 1))
+		if err == nil {
+			stopInt, err := strconv.Atoi(strings.Replace(screenTimeConfiguration.TimeWindowStop, ":", "", 1))
+			if err == nil {
+				if startInt != stopInt && stopInt-nowInt < 10 && !timeWindowAlertSent {
+					timeWindowAlertSent = true
+					utils.Notify(fmt.Sprintf("Hey rapoide guarda che mancano meno di 10 minuti, ti conviene salvare il salvabile!"))
 				}
 			}
 		}

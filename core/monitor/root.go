@@ -114,6 +114,16 @@ func RunAsRoot() {
 					utils.Shutdown()
 				}
 			}
+		} else if startInt > stopInt {
+			if !(nowInt > startInt || nowInt < stopInt) {
+				logger.ZapLog.Info("User out of time window ", currentUser, " ", nowInt, " minutes")
+				// logout user
+				err = utils.LogoutUser(currentUser)
+				if err != nil {
+					// try to shutdown pc
+					utils.Shutdown()
+				}
+			}
 		}
 
 		time.Sleep(time.Duration(logIntervalMinutes) * time.Minute)
