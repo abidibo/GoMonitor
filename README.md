@@ -68,7 +68,7 @@ GoMonitor writes its stuff (db and logs) in the `homePath` directory.
 
 GoMonitor logs out `USER` when it reaches the `screenTimeLimitMinutes`
 
-GoMonitor logs out `USER` if outside of the `screenTimeWindow`
+GoMonitor logs out `USER` if outside of the `screenTimeWindow` (unless `start` equals `stop`)
 
 GoMonitor logs every `logIntervalMinutes` (and uses this interval to aggregate the time spent by the user, so keep it small)
 
