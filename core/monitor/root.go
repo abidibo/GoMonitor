@@ -179,6 +179,7 @@ func remoteHighlightsThread() {
 		}
 
 		// post request
+		logger.ZapLog.Debug("Saving highlights to ", apiUrl)
 		jsonData, _ := json.Marshal(Highlights{Processes: processesHighlights, User: currentUser, Date: date})
 		_, err = http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
